@@ -1,0 +1,34 @@
+/target/
+# Eclipse specific files
+.project
+.classpath
+.settings/
+
+# Eclipse Core
+.metadata
+*.log
+*.tmp
+*.bak
+*.swp
+
+# Eclipse Configuration files
+.idea/
+*.iws
+*.iml
+*.ipr
+
+# Project specific files
+bin/
+target/
+out/
+
+# Maven
+.mvn/
+!**/src/main/**
+!**/src/test/**
+
+# Environment specific files
+.env
+
+# Ignore all properties files
+*.properties

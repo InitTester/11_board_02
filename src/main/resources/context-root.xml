@@ -1,0 +1,91 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+	xmlns:context="http://www.springframework.org/schema/context"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xmlns:tx="http://www.springframework.org/schema/tx"
+	xmlns:mvc="http://www.springframework.org/schema/mvc"
+	xmlns:util="http://www.springframework.org/schema/util"
+	xsi:schemaLocation="
+		http://www.springframework.org/schema/beans
+		http://www.springframework.org/schema/beans/spring-beans-4.1.xsd
+		http://www.springframework.org/schema/mvc
+		http://www.springframework.org/schema/mvc/spring-mvc-4.1.xsd
+		http://www.springframework.org/schema/tx
+		http://www.springframework.org/schema/tx/spring-tx-4.1.xsd
+		http://www.springframework.org/schema/context
+		http://www.springframework.org/schema/context/spring-context-4.1.xsd">
+
+	<!-- 회원 가입/로그인 수동 bean -->
+	<!-- 회원가입 service bean -->
+	<bean id="joinService" class="com.pf.www.forum.service.JoinService" >
+	 	<property name="memberDao" ref="memberDao" />
+	 	<property name="memberAuthDao" ref="memberAuthDao" />
+	 	<property name="emailUtil" ref="emailUtil" />
+	 </bean>
+	 
+	<!-- 로그인 service bean -->
+	<bean id="loginService" class="com.pf.www.forum.service.LoginService" >
+	 	<property name="memberDao" ref="memberDao" />
+	 </bean>
+	
+	<bean id="memberDao" class="com.pf.www.forum.dao.MemberDao" >
+		<constructor-arg ref="dataSource" />
+	</bean>
+	
+	<bean id="memberAuthDao" class="com.pf.www.forum.dao.MemberAuthDao" >
+		<constructor-arg ref="dataSource" />
+	</bean>
+	
+	<bean id="emailUtil" class="com.pf.www.forum.util.EmailUtil" >
+		<property name = "mailSender" ref = "mailSender"/>
+	</bean>
+	
+  	<!-- 이메일 전송하기 위한 bean설정 -->
+	<bean id="mailSender" class="org.springframework.mail.javamail.JavaMailSenderImpl">
+			<property name="host" value="smtp.naver.com" />
+			<property name="port" value="587" />
+			<property name="username" value="${app.username}" />
+			<property name="password" value="${app.password}" />
+			<property name="javaMailProperties">
+			<props>
+				<prop key="mail.smtp.starttls.enable">true</prop>
+			</props>
+		</property>
+	</bean>	
+	
+	<!-- Jasypt Start -->		
+   <bean id="encryptorConfig"
+      class="org.jasypt.encryption.pbe.config.EnvironmentStringPBEConfig">
+	      <!-- 사용할 암호화 알고리즘 -->
+	      <property name="algorithm" value="PBEWithMD5AndDES" />
+	      <!-- PBE (패스워드 기반 암호화) 암호 설정 -->
+	      <property name="password" value="BASIC" />		
+   </bean>
+
+   <bean id="encryptor"
+      class="org.jasypt.encryption.pbe.StandardPBEStringEncryptor">
+      <property name="config" ref="encryptorConfig" />
+   </bean>
+
+   <bean
+      class="org.jasypt.spring31.properties.EncryptablePropertyPlaceholderConfigurer">
+      <constructor-arg ref="encryptor" />
+      <property name="locations">
+         <list>
+            <!-- application.properties 파일 경로 -->
+            <value>classpath:/application.properties</value>
+         </list>
+      </property>
+   </bean>
+   <!-- Jasypt End -->	
+	
+	<!-- Annotation 기반의 Component Scan 필터(service package 만 검색) -->	
+	<!-- base-package 기준으로 모두 스캔하기때문에 regex을 이용해서 정해준다 , 이후 mybatis에서 사용 -->
+	<context:component-scan base-package="com.pf.www">
+		<context:include-filter type="annotation" expression="org.springframework.stereotype.Service" />
+		<context:include-filter type="annotation" expression="org.springframework.stereotype.Component" />
+		<context:include-filter type="annotation" expression="org.springframework.stereotype.Repository" />
+		<context:include-filter type="regex" expression="\.*\.dao\.*" />
+	</context:component-scan>	
+	
+</beans>
